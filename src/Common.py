@@ -25,6 +25,7 @@ WINDOW_COORDINATES_TXT = "data/gameWindow.txt"
 PAGE_URL = "https://www.rechner.club/raetsel/labyrinth-generieren"
 ROWS_ELEMENT_QUERY = '[name="zeilenstr"]'
 COLUMNS_ELEMENT_QUERY = '[name="spaltenstr"]'
+SUBMIT_ELEMENT_QUERY = '[name="berechnen"]'
 NUM_ROWS = 8
 NUM_COLUMNS = 9
 

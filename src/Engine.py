@@ -1,4 +1,5 @@
 import asyncio
+import time
 from typing import Tuple
 from pyppeteer import launch
 from pyppeteer.browser import Browser
@@ -50,7 +51,7 @@ async def GetRowsAndColumnsInputElement(page: Page) -> Tuple[ElementHandle, Elem
     except TypeError as e:
         Print('GetRowsAndColumnsInputElement', 'An input element was not found. Verify the page and query are correct. {}'.format(e))
     except Exception as e:
-        Print('GetRowsAndColumnsInputElement', 'Unkown error occured. {}'.format(e))
+        Print('GetRowsAndColumnsInputElement', 'Unknown error occured. {}'.format(e))
 
     return rows_input_element, columns_input_element, ok
 
@@ -78,6 +79,24 @@ async def WriteRowsAndColumns(rows_input: ElementHandle, columns_input: ElementH
 
     return ok
 
+async def ClickSubmit(page: Page) -> bool:
+    ok = False
+
+    try:
+        submit_element = await GetPageElement(page, Common.SUBMIT_ELEMENT_QUERY)
+
+        await submit_element.click()
+
+        time.sleep(5)
+
+        ok = True
+    except TypeError as e:
+        Print('ClickSubmit', 'The submit button was not found. {}'.format(e))
+    except Exception as e:
+        Print('ClickSubmit', 'Unknown error occured. {}'.format(e))
+
+    return ok
+
 
 async def PlayGame():
     print("Playing game")
@@ -99,6 +118,12 @@ async def PlayGame():
         return
 
     ok = await WriteRowsAndColumns(rows_input, columns_input, Common.NUM_ROWS, Common.NUM_COLUMNS)
+
+    if not ok:
+        await CloseBrowser(browser)
+        return
+
+    ok = await ClickSubmit(page)
 
     if not ok:
         await CloseBrowser(browser)
