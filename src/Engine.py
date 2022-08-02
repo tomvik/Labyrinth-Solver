@@ -47,6 +47,26 @@ async def GetInputElements(page: Page) -> Tuple[ElementHandle, ElementHandle]:
 
     return rows_input_element, columns_input_element
 
+async def WriteInputValue(element: ElementHandle, txt: str) -> None:
+    try:
+        await element.click({'clickCount': 2,
+                             'delay': 10})
+        await element.type(txt)
+    except TypeError as e:
+        Print('WriteInputValue', e)
+        raise e
+    except Exception as e:
+        Print('WriteInputValue', 'Unknown error: {}'.format(e))
+        raise e
+
+async def WriteInputValues(rows_input: ElementHandle, columns_input: ElementHandle, num_rows: int, num_columns: int) -> None:
+    try:
+        await WriteInputValue(rows_input, str(num_rows))
+        await WriteInputValue(columns_input, str(num_columns))
+    except Exception as e:
+        Print('WriteInputValues', e)
+
+
 async def PlayGame():
     print("Playing game")
 
@@ -68,6 +88,9 @@ async def PlayGame():
     except Exception as e:
         Print('PlayGame', 'Unkown error occured. {}'.format(e))
         await CloseBrowser(browser)
+
+    await WriteInputValues(rows_input, columns_input, 7, 8)
+    await page.screenshot({'path': 'data/main_page_after.png'})
 
     await CloseBrowser(browser)
     
