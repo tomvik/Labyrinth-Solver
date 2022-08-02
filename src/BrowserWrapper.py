@@ -10,6 +10,9 @@ from Common import Print
 import Common
 
 async def OpenLabyrinthGenerator(headless: bool) -> Tuple[Browser, Page, bool]:
+    '''
+    Opens the labyrinth webpage either headless or not.
+    '''
     print("Opening labyrinth Generator page")
     ok = False
 
@@ -27,11 +30,17 @@ async def OpenLabyrinthGenerator(headless: bool) -> Tuple[Browser, Page, bool]:
     return browser, page, ok
 
 async def CloseBrowser(browser: Browser) -> None:
+    '''
+    Closes the browser
+    '''
     if browser is not None:
         await browser.close()
         browser = None
 
 async def GetPageElement(page: Page, query: str) -> ElementHandle:
+    '''
+    Queries a page element.
+    '''
     element = await page.J(query)
 
     if element is None:
@@ -40,6 +49,9 @@ async def GetPageElement(page: Page, query: str) -> ElementHandle:
     return element
 
 async def GetRowsAndColumnsInputElement(page: Page) -> Tuple[ElementHandle, ElementHandle, bool]:
+    '''
+    Queries the rows and columns input boxes.
+    '''
     ok = False
     try:
         rows_input_element = await GetPageElement(page, Common.ROWS_ELEMENT_QUERY)
@@ -54,6 +66,9 @@ async def GetRowsAndColumnsInputElement(page: Page) -> Tuple[ElementHandle, Elem
     return rows_input_element, columns_input_element, ok
 
 async def WriteInputValue(element: ElementHandle, txt: str) -> None:
+    '''
+    Writes an input value by clicking two times and then entering the text.
+    '''
     try:
         await element.click({'clickCount': 2,
                              'delay': 10})
@@ -66,6 +81,9 @@ async def WriteInputValue(element: ElementHandle, txt: str) -> None:
         raise e
 
 async def WriteRowsAndColumns(rows_input: ElementHandle, columns_input: ElementHandle, num_rows: int, num_columns: int) -> bool:
+    '''
+    Writes the input values for the rows and columns of the labyrinth.
+    '''
     ok = False
     try:
         await WriteInputValue(rows_input, str(num_rows))
@@ -78,6 +96,9 @@ async def WriteRowsAndColumns(rows_input: ElementHandle, columns_input: ElementH
     return ok
 
 async def ClickSubmit(page: Page) -> bool:
+    '''
+    Clicks the submit button to generate a new labyrinth and waits 5 seconds for the page to load.
+    '''
     ok = False
 
     try:
@@ -96,6 +117,9 @@ async def ClickSubmit(page: Page) -> bool:
     return ok
 
 async def GetLabyrinthImageAndStoreIt(page: Page, labyrinth_path: str) -> bool:
+    '''
+    Stores the image in the selected path. This is kind of hard coded, so it can fail.
+    '''
     ok = False
 
     try:
@@ -115,12 +139,15 @@ async def GetLabyrinthImageAndStoreIt(page: Page, labyrinth_path: str) -> bool:
 
 
 async def AsyncOpenBrowserAndStoreCustomLabyrinth(num_rows: int, num_columns: int, labyrinth_path: str) -> bool:
+    '''
+    Opens asynchroniously a Chromium browser and stores an image of the labyrinth that returns the webpage.
+    '''
     print("Playing game")
 
     ok: bool = False
     browser: Browser = None
     page: Page = None
-    browser, page, ok = await OpenLabyrinthGenerator(False)
+    browser, page, ok = await OpenLabyrinthGenerator(True)
 
     if not ok:
         return
@@ -153,5 +180,8 @@ async def AsyncOpenBrowserAndStoreCustomLabyrinth(num_rows: int, num_columns: in
     
     return ok
 
-def OpenBrowserAndStoreCustomLabyrinth(num_rows, num_columns, labyrinth_path):
-    asyncio.get_event_loop().run_until_complete(AsyncOpenBrowserAndStoreCustomLabyrinth(num_rows, num_columns, labyrinth_path))
+def OpenBrowserAndStoreCustomLabyrinth(num_rows, num_columns, labyrinth_path) -> bool:
+    '''
+    Opens synchroniously a Chromium browser and stores an image of the labyrinth that returns the webpage.
+    '''
+    return asyncio.get_event_loop().run_until_complete(AsyncOpenBrowserAndStoreCustomLabyrinth(num_rows, num_columns, labyrinth_path))
