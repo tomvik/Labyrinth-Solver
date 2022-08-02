@@ -40,17 +40,17 @@ async def GetPageElement(page: Page, query: str) -> ElementHandle:
 
     return element
 
-async def GetInputElements(page: Page) -> Tuple[ElementHandle, ElementHandle, bool]:
+async def GetRowsAndColumnsInputElement(page: Page) -> Tuple[ElementHandle, ElementHandle, bool]:
     ok = False
     try:
-        rows_input_element = await GetPageElement(page, '[name="zeilenstr"]')
-        columns_input_element = await GetPageElement(page, '[name="spaltenstr"]')
+        rows_input_element = await GetPageElement(page, Common.ROWS_ELEMENT_QUERY)
+        columns_input_element = await GetPageElement(page, Common.COLUMNS_ELEMENT_QUERY)
 
         ok = True
     except TypeError as e:
-        Print('GetInputElements', 'An input element was not found. Verify the page and query are correct. {}'.format(e))
+        Print('GetRowsAndColumnsInputElement', 'An input element was not found. Verify the page and query are correct. {}'.format(e))
     except Exception as e:
-        Print('GetInputElements', 'Unkown error occured. {}'.format(e))
+        Print('GetRowsAndColumnsInputElement', 'Unkown error occured. {}'.format(e))
 
     return rows_input_element, columns_input_element, ok
 
@@ -66,7 +66,7 @@ async def WriteInputValue(element: ElementHandle, txt: str) -> None:
         Print('WriteInputValue', 'Unknown error: {}'.format(e))
         raise e
 
-async def WriteInputValues(rows_input: ElementHandle, columns_input: ElementHandle, num_rows: int, num_columns: int) -> bool:
+async def WriteRowsAndColumns(rows_input: ElementHandle, columns_input: ElementHandle, num_rows: int, num_columns: int) -> bool:
     ok = False
     try:
         await WriteInputValue(rows_input, str(num_rows))
@@ -74,7 +74,7 @@ async def WriteInputValues(rows_input: ElementHandle, columns_input: ElementHand
 
         ok = True
     except Exception as e:
-        Print('WriteInputValues', e)
+        Print('WriteRowsAndColumns', e)
 
     return ok
 
@@ -92,13 +92,13 @@ async def PlayGame():
 
     rows_input: ElementHandle = None
     columns_input: ElementHandle = None
-    rows_input, columns_input, ok = await GetInputElements(page)
+    rows_input, columns_input, ok = await GetRowsAndColumnsInputElement(page)
 
     if not ok:
         await CloseBrowser(browser)
         return
 
-    ok = await WriteInputValues(rows_input, columns_input, 7, 8)
+    ok = await WriteRowsAndColumns(rows_input, columns_input, Common.NUM_ROWS, Common.NUM_COLUMNS)
 
     if not ok:
         await CloseBrowser(browser)

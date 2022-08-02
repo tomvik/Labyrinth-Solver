@@ -23,6 +23,10 @@ def initialize_keyboard_listener():
 
 WINDOW_COORDINATES_TXT = "data/gameWindow.txt"
 PAGE_URL = "https://www.rechner.club/raetsel/labyrinth-generieren"
+ROWS_ELEMENT_QUERY = '[name="zeilenstr"]'
+COLUMNS_ELEMENT_QUERY = '[name="spaltenstr"]'
+NUM_ROWS = 8
+NUM_COLUMNS = 9
 
 pyautogui.PAUSE = 0.01
 
