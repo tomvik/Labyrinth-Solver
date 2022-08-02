@@ -97,6 +97,24 @@ async def ClickSubmit(page: Page) -> bool:
 
     return ok
 
+async def GetLabyrinthImage(page: Page) -> bool:
+    ok = False
+
+    try:
+        image_block_element = await GetPageElement(page, Common.IMAGE_BLOCK_ELEMENT_QUERY)
+
+        image_element: ElementHandle = await image_block_element.J('img')
+
+        await image_element.screenshot({'path': 'data/labyrinth_img.png'})
+
+        ok = True
+    except TypeError as e:
+        Print('GetLabyrinthImage', 'The image block was not found. {}'.format(e))
+    except Exception as e:
+        Print('GetLabyrinthImage', 'Unknown error occured. {}'.format(e))
+
+    return ok
+
 
 async def PlayGame():
     print("Playing game")
@@ -129,9 +147,18 @@ async def PlayGame():
         await CloseBrowser(browser)
         return
 
-    await page.screenshot({'path': 'data/main_page_after.png'})
+    await page.screenshot({'path': 'data/main_page_after_input.png'})
+
+    ok = await GetLabyrinthImage(page)
 
     await CloseBrowser(browser)
+    
+    if ok:
+        pass
+        # labyrinth = GetLabyrinthFromStorage()
+        # SolveLabyrinth(labyrinth)
+
+
     
 
 if __name__ == "__main__":
