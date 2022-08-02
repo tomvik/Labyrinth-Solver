@@ -26,6 +26,7 @@ PAGE_URL = "https://www.rechner.club/raetsel/labyrinth-generieren"
 ROWS_ELEMENT_QUERY = '[name="zeilenstr"]'
 COLUMNS_ELEMENT_QUERY = '[name="spaltenstr"]'
 SUBMIT_ELEMENT_QUERY = '[name="berechnen"]'
+IMAGE_BLOCK_ELEMENT_QUERY = '[id="ergebnisblock"]'
 NUM_ROWS = 8
 NUM_COLUMNS = 9
 
