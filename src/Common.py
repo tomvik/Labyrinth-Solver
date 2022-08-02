@@ -21,6 +21,9 @@ def initialize_keyboard_listener():
     keyboardListener = keyboard.Listener(on_press=on_press)
     keyboardListener.start()
 
+def Print(function_name: str, message: str):
+    print('[{}]: {}'.format(function_name, message))
+
 WINDOW_COORDINATES_TXT = "data/gameWindow.txt"
 PAGE_URL = "https://www.rechner.club/raetsel/labyrinth-generieren"
 ROWS_ELEMENT_QUERY = '[name="zeilenstr"]'
@@ -29,6 +32,7 @@ SUBMIT_ELEMENT_QUERY = '[name="berechnen"]'
 IMAGE_BLOCK_ELEMENT_QUERY = '[id="ergebnisblock"]'
 NUM_ROWS = 8
 NUM_COLUMNS = 9
+LABYRINTH_PATH = 'data/labyrinth.png'
 
 pyautogui.PAUSE = 0.01
 
