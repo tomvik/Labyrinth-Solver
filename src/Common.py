@@ -25,13 +25,14 @@ def Print(function_name: str, message: str):
     print('[{}]: {}'.format(function_name, message))
 
 WINDOW_COORDINATES_TXT = "data/gameWindow.txt"
+HEADLESS = True
 PAGE_URL = "https://www.rechner.club/raetsel/labyrinth-generieren"
 ROWS_ELEMENT_QUERY = '[name="zeilenstr"]'
 COLUMNS_ELEMENT_QUERY = '[name="spaltenstr"]'
 SUBMIT_ELEMENT_QUERY = '[name="berechnen"]'
 IMAGE_BLOCK_ELEMENT_QUERY = '[id="ergebnisblock"]'
-NUM_ROWS = 8
-NUM_COLUMNS = 9
+NUM_ROWS = 10
+NUM_COLUMNS = 5
 LABYRINTH_PATH = 'data/labyrinth.png'
 
 pyautogui.PAUSE = 0.01

@@ -17,7 +17,7 @@ async def OpenLabyrinthGenerator(headless: bool) -> Tuple[Browser, Page, bool]:
     ok = False
 
     try:
-        browser = await launch(headless=headless, defaultViewport={'width': 1920, 'height': 1080})
+        browser = await launch(headless=headless, defaultViewport={'width': 1920, 'height': 1920})
         page: Page = await browser.newPage()
 
         await page.goto(Common.PAGE_URL)
@@ -147,7 +147,7 @@ async def AsyncOpenBrowserAndStoreCustomLabyrinth(num_rows: int, num_columns: in
     ok: bool = False
     browser: Browser = None
     page: Page = None
-    browser, page, ok = await OpenLabyrinthGenerator(True)
+    browser, page, ok = await OpenLabyrinthGenerator(Common.HEADLESS)
 
     if not ok:
         return
