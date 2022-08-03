@@ -81,8 +81,8 @@ def PlayGame(make_new_labyrinth: bool):
 
     labyrinth_height, labyrinth_width, _ = labyrinth.shape
 
-    block_height = int(labyrinth_height / Common.NUM_ROWS * 0.9)
-    block_width = int(labyrinth_width / Common.NUM_COLUMNS * 0.9)
+    block_height = int(labyrinth_height / Common.NUM_ROWS * 0.80)
+    block_width = int(labyrinth_width / Common.NUM_COLUMNS * 0.80)
 
     print(labyrinth_height, labyrinth_width)
     print(block_height, block_width)
