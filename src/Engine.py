@@ -1,3 +1,4 @@
+from pygame import Rect
 import cv2
 import Common
 from BrowserWrapper import OpenBrowserAndStoreCustomLabyrinth
@@ -109,12 +110,34 @@ def DrawRectangle(img: cv2.Mat, start_point: Point, width: int, height: int, col
     cv2.imshow('DrawRectangle', img)
     cv2.waitKey()
 
+def DoRectanglesCollide(first_point: Point, first_width: int, first_height: int, second_point: Point, second_width: int, second_height: int):
+    # Too lazy to write it myself.
+    first = Rect(first_point.x, first_point.y, first_width, first_height)
+    second = Rect(second_point.x, second_point.y, second_width, second_height)
+
+    return first.colliderect(second)
+
+def IsRectangleTouchingAWall(labyrinth: cv2.Mat, point: Point, width: int, height: int):
+    labyrinth_height, labyrinth_width, _ = labyrinth.shape
+
+    if point.x < 0 or point.y < 0 or (point.x + width) >= labyrinth_width or (point.y + height) >= labyrinth_height:
+        return True
+
+    for col in range(width):
+        for row in range(height):
+            if tuple(labyrinth[point.y + row][point.x + col]) == Common.COLOR_BLACK:
+                return True
+
+    return False
+
+
 def PlayGame(make_new_labyrinth: bool):
     if make_new_labyrinth:
         if not OpenBrowserAndStoreCustomLabyrinth(Common.NUM_ROWS, Common.NUM_COLUMNS, Common.LABYRINTH_PATH):
             print('Failed to store custom labyrinth')
 
     labyrinth = GetProcessedLabyrinthImage()
+    original_labyrinth = labyrinth.copy()
     start_point = GetStartPoint(labyrinth)
     exit_point = GetExitPoint(labyrinth)
 
@@ -132,6 +155,14 @@ def PlayGame(make_new_labyrinth: bool):
 
     DrawRectangle(labyrinth, start_point, block_height, block_width, Color(0, 0, 255))
     DrawRectangle(labyrinth, exit_point, block_height, block_width, Color(0, 0, 255))
+
+    if DoRectanglesCollide(start_point, block_width, block_height, exit_point, block_width, block_height):
+        print('Collision afar')
+    if DoRectanglesCollide(start_point, block_width, block_height, start_point, block_width, block_height):
+        print('Collision close')
+
+    if IsRectangleTouchingAWall(original_labyrinth, start_point, block_width, block_height):
+        print('Touching a wall')
 
 
     
