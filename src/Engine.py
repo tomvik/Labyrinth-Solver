@@ -5,6 +5,7 @@ from BrowserWrapper import OpenBrowserAndStoreCustomLabyrinth
 from collections import namedtuple
 
 Point = namedtuple('Point', ['x', 'y'])
+Color = namedtuple('Color', ['B', 'G', 'R'])
 
 def GetProcessedLabyrinthImage() -> cv2.Mat | None:
     print('Reading stored labyrinth')
@@ -62,6 +63,14 @@ def GetStartPoint(labyrinth: cv2.Mat) -> Point:
 
     return Point(col, row)
 
+def DrawRectangle(img: cv2.Mat, start_point: Point, width: int, height: int, color: Color):
+    for col in range(width):
+        for row in range(height):
+            img[start_point.y + row][start_point.x + col] = list(color)
+
+    cv2.imshow('DrawRectangle', img)
+    cv2.waitKey()
+
 def PlayGame(make_new_labyrinth: bool):
     if make_new_labyrinth:
         if not OpenBrowserAndStoreCustomLabyrinth(Common.NUM_ROWS, Common.NUM_COLUMNS, Common.LABYRINTH_PATH):
@@ -70,8 +79,19 @@ def PlayGame(make_new_labyrinth: bool):
     labyrinth = GetProcessedLabyrinthImage()
     start_point = GetStartPoint(labyrinth)
 
+    labyrinth_height, labyrinth_width, _ = labyrinth.shape
+
+    block_height = int(labyrinth_height / Common.NUM_ROWS * 0.9)
+    block_width = int(labyrinth_width / Common.NUM_COLUMNS * 0.9)
+
+    print(labyrinth_height, labyrinth_width)
+    print(block_height, block_width)
+
+    DrawRectangle(labyrinth, start_point, block_height, block_width, Color(0, 0, 255))
+
+
     
 
 if __name__ == "__main__":
     Common.initialize_keyboard_listener()
-    PlayGame(False)
+    PlayGame(True)
