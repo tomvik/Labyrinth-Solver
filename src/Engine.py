@@ -59,7 +59,45 @@ def GetStartPoint(labyrinth: cv2.Mat) -> Point:
         col += 1
 
     print(row, col, 'Found entrance')
-        
+
+    return Point(col, row)
+
+
+def GetExitPoint(labyrinth: cv2.Mat) -> Point:
+    # Find leftmost vertical wall
+    row = 31
+    col = 0
+    while tuple(labyrinth[row, col]) != Common.COLOR_BLACK:
+        labyrinth[row, col] = [0, 255, 0]
+        if col % 5 == 0:
+            cv2.imshow('Looking for line', labyrinth)
+            cv2.waitKey()
+
+        col += 1
+
+    print(row, col, 'Found black tile')
+
+    while tuple(labyrinth[row, col]) == Common.COLOR_BLACK:
+        labyrinth[row, col] = [0, 255, 0]
+        if row % 5 == 0:
+            cv2.imshow('Looking for line', labyrinth)
+            cv2.waitKey()
+
+        row += 1
+
+    row -= 1
+
+    print(row, col, 'Found last black tile')
+
+    while tuple(labyrinth[row, col]) != Common.COLOR_WHITE:
+        labyrinth[row, col] = [0, 255, 0]
+        if col % 5 == 0:
+            cv2.imshow('Looking for line', labyrinth)
+            cv2.waitKey()
+
+        col += 1
+
+    print(row, col, 'Found exit')
 
     return Point(col, row)
 
@@ -78,20 +116,26 @@ def PlayGame(make_new_labyrinth: bool):
 
     labyrinth = GetProcessedLabyrinthImage()
     start_point = GetStartPoint(labyrinth)
+    exit_point = GetExitPoint(labyrinth)
 
     labyrinth_height, labyrinth_width, _ = labyrinth.shape
 
-    block_height = int(labyrinth_height / Common.NUM_ROWS * 0.80)
-    block_width = int(labyrinth_width / Common.NUM_COLUMNS * 0.80)
+    block_height = int(labyrinth_height / Common.NUM_ROWS * 0.60)
+    block_width = int(labyrinth_width / Common.NUM_COLUMNS * 0.60)
 
     print(labyrinth_height, labyrinth_width)
     print(block_height, block_width)
 
+    start_point = Point(start_point.x + 1, start_point.y + 1)
+    exit_point = Point(exit_point.x, exit_point.y - block_height)
+
+
     DrawRectangle(labyrinth, start_point, block_height, block_width, Color(0, 0, 255))
+    DrawRectangle(labyrinth, exit_point, block_height, block_width, Color(0, 0, 255))
 
 
     
 
 if __name__ == "__main__":
     Common.initialize_keyboard_listener()
-    PlayGame(True)
+    PlayGame(False)
