@@ -1,7 +1,9 @@
+import collections
 import sys
+from turtle import left
 sys.setrecursionlimit(4000)
 
-from typing import List
+from typing import List, Set
 from pygame import Rect
 import cv2
 import Common
@@ -203,13 +205,58 @@ def SolveRecursivelyDFS(original_labyrinth: cv2.Mat, labyrinth: cv2.Mat, start_p
         down_path.append(down_point)
         SolveRecursivelyDFS(original_labyrinth, labyrinth, down_point, width, height, down_path, depth + 1, end_point)
 
+def SolveLabyrinthBFS(original_labyrinth: cv2.Mat, labyrinth: cv2.Mat, start_point: Point, width: int, height: int, end_point: Point):
+    global found_solution
+
+    visited_points: Set[Point] = set()
+    next_points = collections.deque([start_point])
+
+    visited_points.add(start_point)
+
+    while next_points:
+        print(next_points)
+        print(visited_points)
+        current_point = next_points.popleft()
+        print(current_point)
+
+        if DoRectanglesCollide(current_point, width, height, end_point, width, height):
+            print('Finished')
+            found_solution = True
+            break
+
+        left_point = Point(current_point.x - 1, current_point.y)
+        if left_point not in visited_points and not IsRectangleTouchingAWall(labyrinth, left_point, width, height):
+            next_points.append(left_point)
+            visited_points.add(left_point)
+            MoveRectangle(labyrinth, current_point, width, height, -1, 0)
+
+        right_point = Point(current_point.x + 1, current_point.y)
+        if right_point not in visited_points and not IsRectangleTouchingAWall(labyrinth, right_point, width, height):
+            next_points.append(right_point)
+            visited_points.add(right_point)
+            MoveRectangle(labyrinth, current_point, width, height, 1, 0)
+
+        up_point = Point(current_point.x, current_point.y - 1)
+        if up_point not in visited_points and not IsRectangleTouchingAWall(labyrinth, up_point, width, height):
+            next_points.append(up_point)
+            visited_points.add(up_point)
+            MoveRectangle(labyrinth, current_point, width, height, 0, -1)
+
+        down_point = Point(current_point.x, current_point.y - 1)
+        if down_point not in visited_points and not IsRectangleTouchingAWall(labyrinth, down_point, width, height):
+            next_points.append(down_point)
+            visited_points.add(down_point)
+            MoveRectangle(labyrinth, current_point, width, height, 0, 1)
+
+
 def SolveLabyrinth(original_labyrinth: cv2.Mat, labyrinth: cv2.Mat, start_point: Point, width: int, height: int, end_point: Point):
 
     path: List[Point] = list()
     path.append(start_point)
     depth = 0
 
-    SolveRecursivelyDFS(original_labyrinth, labyrinth, start_point, width, height, path, depth, end_point)
+    # SolveRecursivelyDFS(original_labyrinth, labyrinth, start_point, width, height, path, depth, end_point)
+    SolveLabyrinthBFS(original_labyrinth, labyrinth, start_point, width, height, end_point)
 
 
 
