@@ -123,12 +123,38 @@ def IsRectangleTouchingAWall(labyrinth: cv2.Mat, point: Point, width: int, heigh
     if point.x < 0 or point.y < 0 or (point.x + width) >= labyrinth_width or (point.y + height) >= labyrinth_height:
         return True
 
+    # If too slow, maybe check only the perimeter.
     for col in range(width):
         for row in range(height):
             if tuple(labyrinth[point.y + row][point.x + col]) == Common.COLOR_BLACK:
                 return True
 
     return False
+
+def MoveRectangle(labyrinth: cv2.Mat, point: Point, width: int, height: int, dx: int, dy: int) -> Point:
+    labyrinth_height, labyrinth_width, _ = labyrinth.shape
+
+    print(point, width, height, dx, dy, labyrinth_height, labyrinth_width)
+
+    if point.x < 0 or \
+       (point.x + dx < 0) or \
+       point.y < 0 or \
+       (point.y + dy) < 0 or \
+       (point.x + width) >= labyrinth_width or \
+       (point.x + width + dx) >= labyrinth_width or \
+       (point.y + height) >= labyrinth_height or \
+       (point.y + height + dy) >= labyrinth_height:
+        print('Cannot move')
+        return point
+
+    DrawRectangle(labyrinth, point, width, height, Common.COLOR_WHITE)
+
+    next_point = Point(point.x + dx, point.y + dy)
+
+    DrawRectangle(labyrinth, next_point, width, height, Color(0, 0, 255))
+
+    return next_point
+
 
 
 def PlayGame(make_new_labyrinth: bool):
@@ -163,6 +189,14 @@ def PlayGame(make_new_labyrinth: bool):
 
     if IsRectangleTouchingAWall(original_labyrinth, start_point, block_width, block_height):
         print('Touching a wall')
+
+    start_point = MoveRectangle(labyrinth, start_point, block_width, block_height, block_width, 0)
+    start_point = MoveRectangle(labyrinth, start_point, block_width, block_height, block_width, 0)
+    start_point = MoveRectangle(labyrinth, start_point, block_width, block_height, block_width, 0)
+    start_point = MoveRectangle(labyrinth, start_point, block_width, block_height, block_width, 0)
+    start_point = MoveRectangle(labyrinth, start_point, block_width, block_height, block_width, 0)
+    start_point = MoveRectangle(labyrinth, start_point, block_width, block_height, block_width, 0)
+    start_point = MoveRectangle(labyrinth, start_point, block_width, block_height, block_width, 0)
 
 
     
