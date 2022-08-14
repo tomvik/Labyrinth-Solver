@@ -31,7 +31,7 @@ ROWS_ELEMENT_QUERY = '[name="zeilenstr"]'
 COLUMNS_ELEMENT_QUERY = '[name="spaltenstr"]'
 SUBMIT_ELEMENT_QUERY = '[name="berechnen"]'
 IMAGE_BLOCK_ELEMENT_QUERY = '[id="ergebnisblock"]'
-NUM_ROWS = 10
+NUM_ROWS = 5
 NUM_COLUMNS = 5
 LABYRINTH_PATH = 'data/labyrinth.png'
 
