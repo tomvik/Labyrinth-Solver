@@ -28,6 +28,7 @@ def GetProcessedLabyrinthImage() -> cv2.Mat | None:
     _, threshold = cv2.threshold(labyrinth, 150, 255, cv2.THRESH_BINARY)
     binary_labyrinth = cv2.bitwise_and(labyrinth, labyrinth, mask=threshold)
     labyrinth = cv2.cvtColor(binary_labyrinth, cv2.COLOR_GRAY2RGB)
+    labyrinth = labyrinth[2:]
     
     cv2.imshow('Labyrinth', labyrinth)
     cv2.waitKey()
@@ -86,7 +87,8 @@ def DrawRectangle(img: cv2.Mat, start_point: Point, width: int, height: int, col
 
     if show_img:
         cv2.imshow('DrawRectangle', img)
-        cv2.waitKey(5)
+        # cv2.waitKey()
+        cv2.waitKey(1)
 
 def DoRectanglesCollide(first_point: Point, first_width: int, first_height: int, second_point: Point, second_width: int, second_height: int):
     # Too lazy to write it myself.
@@ -109,10 +111,10 @@ def IsRectangleTouchingAWall(labyrinth: cv2.Mat, point: Point, width: int, heigh
 
     return False
 
-def MoveRectangle(labyrinth: cv2.Mat, point: Point, width: int, height: int, dx: int, dy: int) -> Point:
+def MoveRectangle(labyrinth: cv2.Mat, point: Point, width: int, height: int, dx: int, dy: int, trail_color: Color = Color(0, 0, 100), current_color: Color = Color(255, 0, 0)) -> Point:
     labyrinth_height, labyrinth_width, _ = labyrinth.shape
 
-    print(point, width, height, dx, dy, labyrinth_height, labyrinth_width)
+    # print(point, width, height, dx, dy, labyrinth_height, labyrinth_width)
 
     if point.x < 0 or \
        (point.x + dx < 0) or \
@@ -125,16 +127,95 @@ def MoveRectangle(labyrinth: cv2.Mat, point: Point, width: int, height: int, dx:
         print('Cannot move')
         return point
 
-    DrawRectangle(labyrinth, point, width, height, Color(0, 0, 100), False)
+    DrawRectangle(labyrinth, point, width, height, trail_color, False)
 
     next_point = Point(point.x + dx, point.y + dy)
 
-    DrawRectangle(labyrinth, next_point, width, height, Color(0, 0, 255))
+    if not IsRectangleTouchingAWall(labyrinth, next_point, width, height):
+        DrawRectangle(labyrinth, next_point, width, height, current_color)
+        return next_point
 
-    return next_point
+    return point
 
-def PointsAreEqual(first: Point, second: Point):
+def PointsAreEqual(first: Point, second: Point) -> bool:
     return first.x == second.x and first.y == second.y
+
+def GetPixelDepthFromColor(color: Color) -> int:
+    return (color.B * 255 * 255) + (color.G * 255) + (color.R)
+
+def GetPixelColorFromDepth(depth: int) -> Color:
+    return Color(depth//(255*255), (depth//255)%255, depth%255)
+
+def GetPixelColor(img: cv2.Mat, y: int, x: int) -> Color:
+    tmp_color = img[y][x]
+    result = Color(tmp_color[0], tmp_color[1], tmp_color[2])
+    # print(result)
+    return result
+
+# DFS solution
+def SolveRecursivelyDFSWithDepth(original_labyrinth: cv2.Mat, labyrinth: cv2.Mat, start_point: Point, width: int, height: int, path: List[Point], depth: int, end_point: Point, dx: int, dy: int):
+    global found_solution
+
+    print(depth)
+    if IsRectangleTouchingAWall(labyrinth, start_point, width, height) or found_solution or depth > 2000:
+        print('Touching wall or depth', depth)
+        return
+
+    previous_start = start_point
+    start_point = MoveRectangle(labyrinth, previous_start, width, height, dx, dy, GetPixelColorFromDepth(depth - 1), GetPixelColorFromDepth(depth))
+
+    if PointsAreEqual(previous_start, start_point) and depth != 2:
+        print('Did not move')
+        return
+
+    if DoRectanglesCollide(start_point, width, height, end_point, width, height):
+        print("Made it to the end", depth, path)
+        found_solution = True
+        return
+
+    can_go_left = False
+    for i in range(height):
+        left_color: Color = GetPixelColor(labyrinth, start_point.y + i, start_point.x - 1)
+        left_depth = GetPixelDepthFromColor(left_color)
+        if left_depth > depth + 1 and (left_depth < 65025 or left_color == Common.COLOR_WHITE):
+            can_go_left = True
+            break
+
+    if can_go_left:
+        SolveRecursivelyDFSWithDepth(original_labyrinth, labyrinth, start_point, width, height, path, depth + 1, end_point, -1, 0)
+
+    can_go_up = False
+    for i in range(width):
+        up_color: Color = GetPixelColor(labyrinth, start_point.y - 1, start_point.x + i)
+        up_depth = GetPixelDepthFromColor(up_color)
+        if up_depth > depth + 1 and (up_depth < 65025 or up_color == Common.COLOR_WHITE):
+            can_go_up = True
+            break
+
+    if can_go_up:
+        SolveRecursivelyDFSWithDepth(original_labyrinth, labyrinth, start_point, width, height, path, depth + 1, end_point, 0, -1)
+
+    can_go_right = False
+    for i in range(height):
+        right_color: Color = GetPixelColor(labyrinth, start_point.y + i, start_point.x + width + 1)
+        right_depth = GetPixelDepthFromColor(right_color)
+        if right_depth > depth + 1 and (right_depth < 65025 or right_color == Common.COLOR_WHITE):
+            can_go_right = True
+            break
+
+    if can_go_right:
+        SolveRecursivelyDFSWithDepth(original_labyrinth, labyrinth, start_point, width, height, path, depth + 1, end_point, 1, 0)
+
+    can_go_down = False
+    for i in range(width):
+        down_color: Color = GetPixelColor(labyrinth, start_point.y + height + 1, start_point.x + i)
+        down_depth = GetPixelDepthFromColor(down_color)
+        if down_depth > depth + 1 and (down_depth < 65025 or down_color == Common.COLOR_WHITE):
+            can_go_down = True
+            break
+
+    if can_go_down:
+        SolveRecursivelyDFSWithDepth(original_labyrinth, labyrinth, start_point, width, height, path, depth + 1, end_point, 0, 1)
 
 # DFS solution
 def SolveRecursivelyDFS(original_labyrinth: cv2.Mat, labyrinth: cv2.Mat, start_point: Point, width: int, height: int, path: List[Point], depth: int, end_point: Point):
@@ -205,6 +286,51 @@ def SolveRecursivelyDFS(original_labyrinth: cv2.Mat, labyrinth: cv2.Mat, start_p
         down_path.append(down_point)
         SolveRecursivelyDFS(original_labyrinth, labyrinth, down_point, width, height, down_path, depth + 1, end_point)
 
+def SolveLabyrinthBFSWithDepth(original_labyrinth: cv2.Mat, labyrinth: cv2.Mat, start_point: Point, width: int, height: int, end_point: Point):
+    global found_solution
+
+    visited_points: Set[Point] = set()
+    next_points = collections.deque([start_point])
+    next_depth = collections.deque([1])
+
+    visited_points.add(start_point)
+
+    while next_points:
+        current_point = next_points.popleft()
+        current_depth = next_depth.popleft()
+        # print(current_point)
+        # print(current_depth)
+        MoveRectangle(labyrinth, current_point, width, height, 0, 0, GetPixelColorFromDepth(current_depth), GetPixelColorFromDepth(current_depth))
+
+        if DoRectanglesCollide(current_point, width, height, end_point, width, height):
+            print('Finished')
+            found_solution = True
+            break
+
+        left_point = Point(current_point.x - 1, current_point.y)
+        if left_point not in visited_points and not IsRectangleTouchingAWall(labyrinth, left_point, width, height):
+            next_points.append(left_point)
+            next_depth.append(current_depth + 1)
+            visited_points.add(left_point)
+
+        right_point = Point(current_point.x + 1, current_point.y)
+        if right_point not in visited_points and not IsRectangleTouchingAWall(labyrinth, right_point, width, height):
+            next_points.append(right_point)
+            next_depth.append(current_depth + 1)
+            visited_points.add(right_point)
+
+        up_point = Point(current_point.x, current_point.y - 1)
+        if up_point not in visited_points and not IsRectangleTouchingAWall(labyrinth, up_point, width, height):
+            next_points.append(up_point)
+            next_depth.append(current_depth + 1)
+            visited_points.add(up_point)
+
+        down_point = Point(current_point.x, current_point.y + 1)
+        if down_point not in visited_points and not IsRectangleTouchingAWall(labyrinth, down_point, width, height):
+            next_points.append(down_point)
+            next_depth.append(current_depth + 1)
+            visited_points.add(down_point)
+
 def SolveLabyrinthBFS(original_labyrinth: cv2.Mat, labyrinth: cv2.Mat, start_point: Point, width: int, height: int, end_point: Point):
     global found_solution
 
@@ -253,10 +379,12 @@ def SolveLabyrinth(original_labyrinth: cv2.Mat, labyrinth: cv2.Mat, start_point:
 
     path: List[Point] = list()
     path.append(start_point)
-    depth = 0
+    depth = 2
 
     # SolveRecursivelyDFS(original_labyrinth, labyrinth, start_point, width, height, path, depth, end_point)
-    SolveLabyrinthBFS(original_labyrinth, labyrinth, start_point, width, height, end_point)
+    # SolveRecursivelyDFSWithDepth(original_labyrinth, labyrinth, start_point, width, height, path, depth, end_point, 0, 0)
+    # SolveLabyrinthBFS(original_labyrinth, labyrinth, start_point, width, height, end_point)
+    SolveLabyrinthBFSWithDepth(original_labyrinth, labyrinth, start_point, width, height, end_point)
 
 
 
@@ -300,4 +428,4 @@ def PlayGame(make_new_labyrinth: bool):
 
 if __name__ == "__main__":
     Common.initialize_keyboard_listener()
-    PlayGame(False)
+    PlayGame(True)
